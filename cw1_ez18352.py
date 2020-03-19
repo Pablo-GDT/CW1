@@ -206,7 +206,6 @@ def main():
 
     plt.show()
 
-    "testing this "
-
+    
 if __name__ == '__main__':
     main()
