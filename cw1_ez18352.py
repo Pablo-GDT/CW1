@@ -67,8 +67,9 @@ def linear_least_squares(xs, ys):
 
     c, m= linear_weights[0], linear_weights[1]
     y_hat= xs*m + c
+    linear_err = sum_squared(y_hat,ys)
 
-    return y_hat, c, m
+    return y_hat,linear_err, c, m
 
 def plot_reconstucted_linear(xs,ys, m, c):
     x_min = xs.min()
@@ -95,14 +96,13 @@ def polynomial_least_squares(xs, ys):
     ones = np.ones(xs.shape)
     xs2 = np.square(xs)
 
-
     X_array = np.column_stack((ones, xs, xs2))
     x_e = np.linalg.inv(X_array.T.dot(X_array))
     polynomial_weights = x_e.dot(X_array.T).dot(ys)
 
     y_hat = (xs**2) * polynomial_weights[2] + xs * polynomial_weights[1] + polynomial_weights[0]
-
-    return y_hat, polynomial_weights
+    polynomial_err = sum_squared(y_hat,ys)
+    return y_hat, polynomial_err
 
 def cubic_least_squares(xs, ys):
     # """Estimates the values of the coefficients a and c for the linear model y= ax^3 bx^2 + cx +d
@@ -114,14 +114,14 @@ def cubic_least_squares(xs, ys):
 
     ones = np.ones(xs.shape)
     xs2 = np.square(xs)
-    xs3 = np.power(3,xs)
+    xs3 = np.power(xs,3)
 
     X_array = np.column_stack((ones, xs, xs2, xs3))
     x_e = np.linalg.inv(X_array.T.dot(X_array))
     polynomial_weights = x_e.dot(X_array.T).dot(ys)
 
     y_hat = (xs**3) * polynomial_weights[3] + (xs**2) * polynomial_weights[2] + xs * polynomial_weights[1] + polynomial_weights[0]
-    plot_reconstucted_cubic(xs,y_hat)
+
     return y_hat, polynomial_weights
 
 def sum_squared(y,y_hat):
@@ -177,33 +177,36 @@ def main():
     view_data_segments(x_coordiantes, y_coordiantes)
     x_segments, y_segments = segment_data(x_coordiantes, y_coordiantes)
 
+    error_list=[]
     total_reconstructed_error=0
 
     #logical statement that identifies when the user passes the plotting argument
     if len(sys_arguments)== 2 and sys_arguments[1] == '--plot':
 
-     for i in range(len(x_segments)):
+     for xs, ys  in zip(x_segments,y_segments):
 
         #model signal using linear least squares method and calculate the error for this method
-        y_hat, c, m = linear_least_squares(x_segments[i],y_segments[i])
-        linear_err = sum_squared(y_hat,y_segments[i])
-        plot_reconstucted_linear(x_segments[i],y_segments[i], m, c)
+        y_hat, linear_err, c, m = linear_least_squares(xs,ys)
+        plot_reconstucted_linear(xs,ys, m, c)
 
-        y_hat, polynomial_weights= polynomial_least_squares(x_segments[i],y_segments[i])
-        plot_reconstucted_polynomial(x_segments[i],y_hat)
-        polynomial_err = sum_squared(y_hat,y_segments[i])
+        y_hat, polynomial_err= polynomial_least_squares(xs,ys)
+        plot_reconstucted_polynomial(xs,y_hat)
         print(polynomial_err)
 
 
-        y_hat, polynomial_weights= cubic_least_squares(x_segments[i],y_segments[i])
-        plot_reconstucted_cubic(x_segments[i],y_hat)
-        cubic_err = sum_squared(y_hat,y_segments[i])
+        y_hat, polynomial_weights= cubic_least_squares(xs,ys)
+        plot_reconstucted_cubic(xs,y_hat)
+        cubic_err = sum_squared(y_hat,ys)
         print(cubic_err)
 
-        plt.scatter(x_segments[i],y_segments[i])
+        plt.scatter(xs,ys)
+
+        plt.show()
 
 
     plt.show()
 
-    if __name__ == '__main__':
-        main()
+    
+
+if __name__ == '__main__':
+    main()
