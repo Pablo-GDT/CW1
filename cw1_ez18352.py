@@ -205,7 +205,7 @@ def main():
 
 
     plt.show()
-  change it now what
+  change it now whats
 
 if __name__ == '__main__':
     main()
