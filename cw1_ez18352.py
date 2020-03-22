@@ -203,54 +203,54 @@ def quartic_least_squares(xs, ys):
 def main():
     # reads in command line parameters, stores th and grabs the name of the csv file
     sys_arguments = sys.argv[1:]
-    csvfile_name = sys_arguments[0]
+    if len(sys_arguments) == 0:
+        sys.exit("Error: You need to pass in a valid csv file")
+    elif len(sys_arguments) > 2:
+        sys.exit(
+            "Error: Too many arguments: Program only accepts a valid csv file and an optional '--plot' argument")
+    else:
+        csvfile_name = sys_arguments[0]
 
-    # reads and separates points from csv file into x-coordiantes and y-coordiantes and then segments the coordinates into individual signals
-    x_coordiantes, y_coordiantes = load_points_from_file(csvfile_name)
-    view_data_segments(x_coordiantes, y_coordiantes)
-    x_segments, y_segments = segment_data(x_coordiantes, y_coordiantes)
+        # reads and separates points from csv file into x-coordiantes and y-coordiantes and then segments the coordinates into individual signals
+        x_coordiantes, y_coordiantes = load_points_from_file(csvfile_name)
+        view_data_segments(x_coordiantes, y_coordiantes)
+        x_segments, y_segments = segment_data(x_coordiantes, y_coordiantes)
 
-    error_list = []
-    total_reconstructed_error = 0
-    best_y_hat = []
-    # logical statement that identifies when the user passes the plotting argument
-    # looping through the segments
-    for xs, ys in zip(x_segments, y_segments):
+        error_list = []
+        total_reconstructed_error = 0
+        best_y_hat = []
+        # logical statement that identifies when the user passes the plotting argument
+        # looping through the segments
+        for xs, ys in zip(x_segments, y_segments):
 
-        # model signal using linear least squares method and calculate the error for this method
-        y_hat_linear, linear_err, c, m = linear_least_squares(xs, ys)
+            # model signal using linear least squares method and calculate the error for this method
+            y_hat_linear, linear_err, c, m = linear_least_squares(xs, ys)
 
-        y_hat_poly, polynomial_err = polynomial_least_squares(xs, ys)
+            y_hat_poly, polynomial_err = polynomial_least_squares(xs, ys)
 
-        y_hat_cubic, cubic_err = cubic_least_squares(xs, ys)
+            y_hat_cubic, cubic_err = cubic_least_squares(xs, ys)
 
-        y_hat_quartic, quartic_err = quartic_least_squares(xs, ys)
+            y_hat_quartic, quartic_err = quartic_least_squares(xs, ys)
 
-        y_hat_sin, sin_err = sinusoidal_least_squared(xs, ys)
+            y_hat_sin, sin_err = sinusoidal_least_squared(xs, ys)
 
-        # plt.scatter(xs, ys)
-        # plt.show()
+            error_list = [linear_err, polynomial_err, cubic_err, quartic_err, sin_err]
+            best_fit = min(error_list)
+            total_reconstructed_error = total_reconstructed_error + best_fit
+            # print("total reconstructed error so far:" + str(total_reconstructed_error))
+            if best_fit == linear_err:
+                best_y_hat.extend(y_hat_linear)
+            elif best_fit == polynomial_err:
+                best_y_hat.extend(y_hat_poly)
+            else:
+                best_y_hat.extend(y_hat_cubic)
 
-        error_list = [linear_err, polynomial_err, cubic_err, quartic_err, sin_err]
-        best_fit = min(error_list)
-        total_reconstructed_error = total_reconstructed_error + best_fit
-        print("total reconstructed error so far:" + str(total_reconstructed_error))
-        if best_fit == linear_err:
-            best_y_hat.extend(y_hat_linear)
-        elif best_fit == polynomial_err:
-            best_y_hat.extend(y_hat_poly)
-        else:
-            best_y_hat.extend(y_hat_cubic)
-    #best_y_hat = list(best_y_hat)
-    print(best_y_hat)
-    print(error_list.index(min(error_list)))
-
-    if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
-        fig, axs = plt.subplots()
-        axs.scatter(x_coordiantes, y_coordiantes, label="Data")
-        print("Hello")
-        plt.plot(x_coordiantes, best_y_hat)
-        plt.show()
+        print(total_reconstructed_error)
+        if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
+            fig, axs = plt.subplots()
+            axs.scatter(x_coordiantes, y_coordiantes, label="Data")
+            plt.plot(x_coordiantes, best_y_hat)
+            plt.show()
 
 
 if __name__ == '__main__':
