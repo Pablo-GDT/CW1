@@ -212,36 +212,45 @@ def main():
 
     error_list = []
     total_reconstructed_error = 0
-
+    best_y_hat = []
     # logical statement that identifies when the user passes the plotting argument
+    # looping through the segments
+    for xs, ys in zip(x_segments, y_segments):
+
+        # model signal using linear least squares method and calculate the error for this method
+        y_hat_linear, linear_err, c, m = linear_least_squares(xs, ys)
+
+        y_hat_poly, polynomial_err = polynomial_least_squares(xs, ys)
+
+        y_hat_cubic, cubic_err = cubic_least_squares(xs, ys)
+
+        y_hat_quartic, quartic_err = quartic_least_squares(xs, ys)
+
+        y_hat_sin, sin_err = sinusoidal_least_squared(xs, ys)
+
+        # plt.scatter(xs, ys)
+        # plt.show()
+
+        error_list = [linear_err, polynomial_err, cubic_err, quartic_err, sin_err]
+        best_fit = min(error_list)
+        total_reconstructed_error = total_reconstructed_error + best_fit
+        print("total reconstructed error so far:" + str(total_reconstructed_error))
+        if best_fit == linear_err:
+            best_y_hat.extend(y_hat_linear)
+        elif best_fit == polynomial_err:
+            best_y_hat.extend(y_hat_poly)
+        else:
+            best_y_hat.extend(y_hat_cubic)
+    #best_y_hat = list(best_y_hat)
+    print(best_y_hat)
+    print(error_list.index(min(error_list)))
+
     if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
-        # looping through the segments
-        for xs, ys in zip(x_segments, y_segments):
-
-            # model signal using linear least squares method and calculate the error for this method
-            y_hat, linear_err, c, m = linear_least_squares(xs, ys)
-            plot_reconstucted_linear(xs, ys, m, c)
-
-            y_hat, polynomial_err = polynomial_least_squares(xs, ys)
-            plot_reconstucted_func(xs, y_hat)
-
-            y_hat, cubic_err = cubic_least_squares(xs, ys)
-            plot_reconstucted_func(xs, y_hat)
-
-            y_hat, quartic_err = quartic_least_squares(xs, ys)
-            plot_reconstucted_func(xs, y_hat)
-
-            y_hat, sin_err = sinusoidal_least_squared(xs, ys)
-            plot_reconstucted_func(xs, y_hat)
-
-            plt.scatter(xs, ys)
-            plt.show()
-
-            error_list = [linear_err, polynomial_err, cubic_err, quartic_err, sin_err]
-            total_reconstructed_error = total_reconstructed_error + min(error_list)
-            print("total reconstructed error so far:" + str(total_reconstructed_error))
-    plt.show()
-    if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
+        fig, axs = plt.subplots()
+        axs.scatter(x_coordiantes, y_coordiantes, label="Data")
+        print("Hello")
+        plt.plot(x_coordiantes, best_y_hat)
+        plt.show()
 
 
 if __name__ == '__main__':
