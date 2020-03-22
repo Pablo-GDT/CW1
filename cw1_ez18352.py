@@ -1,4 +1,3 @@
-
 import sys
 import numpy as np
 import pandas as pd
@@ -70,15 +69,7 @@ def linear_least_squares(xs, ys):
     y_hat = xs*m + c
     linear_err = sum_squared(y_hat, ys)
     print("linear error =" + str(linear_err))
-    return y_hat, linear_err, c, m
-
-
-def plot_reconstucted_linear(xs, ys, m, c):
-    x_min = xs.min()
-    x_max = xs.max()
-    y_1r = x_min*m + c
-    y_2r = x_max*m + c
-    plt.plot([x_min, x_max], [y_1r, y_2r])
+    return y_hat, linear_err
 
 
 def sum_squared(y, y_hat):
@@ -182,7 +173,7 @@ def fitting_best_fucntions(x_segments, y_segments):
     for xs, ys in zip(x_segments, y_segments):
 
         # model signal using linear least squares method and calculate the error for this method
-        y_hat_linear, linear_err, c, m = linear_least_squares(xs, ys)
+        y_hat_linear, linear_err = linear_least_squares(xs, ys)
 
         y_hat_poly, polynomial_err = polynomial_least_squares(xs, ys)
 
@@ -229,7 +220,7 @@ def main():
 
         # reads and separates points from csv file into x-coordiantes and y-coordiantes and then segments the coordinates into individual signals
         x_coordiantes, y_coordiantes = load_points_from_file(csvfile_name)
-        #view_data_segments(x_coordiantes, y_coordiantes)
+        # view_data_segments(x_coordiantes, y_coordiantes)
         x_segments, y_segments = segment_data(x_coordiantes, y_coordiantes)
         best_y_hat, total_reconstructed_error = fitting_best_fucntions(x_segments, y_segments)
         # logical statement that identifies when the user passes the plotting argument
