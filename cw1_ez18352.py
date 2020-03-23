@@ -183,16 +183,28 @@ def fitting_best_fucntions(x_segments, y_segments):
 
         y_hat_sin, sin_err = sinusoidal_least_squared(xs, ys)
 
-        best_fit = min(linear_err, polynomial_err, cubic_err, quartic_err, sin_err)
+        best_fit = min(linear_err, cubic_err, sin_err)
         total_reconstructed_error = total_reconstructed_error + best_fit
         #print("total reconstructed error so far:" + str(total_reconstructed_error))
         if best_fit == linear_err:
             best_y_hat.extend(y_hat_linear)
-        elif best_fit == polynomial_err:
-            best_y_hat.extend(y_hat_poly)
-        else:
+        elif best_fit == cubic_err:
             best_y_hat.extend(y_hat_cubic)
+        else:
+            best_y_hat.extend(y_hat_sin)
     return best_y_hat, total_reconstructed_error
+
+
+def plot_graph(x_coordiantes, y_coordiantes, best_y_hat):
+
+    fig, axs = plt.subplots()
+    axs.scatter(x_coordiantes, y_coordiantes, label="Data")
+    plt.plot(x_coordiantes, best_y_hat, label="Fitted functions", color="red")
+    plt.xlabel("x-axis", fontsize=12)
+    plt.ylabel("y-axis", fontsize=12)
+    plt.title("Fitting function to datapoints", fontsize=12)
+    fig.legend()
+    plt.show()
 
 
 # def sinusoidal_least_squared(xs, ys):
@@ -227,14 +239,7 @@ def main():
 
         print(total_reconstructed_error)
         if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
-            fig, axs = plt.subplots()
-            axs.scatter(x_coordiantes, y_coordiantes, label="Data")
-            plt.xlabel("x-axis", fontsize=12)
-            plt.ylabel("y-axis", fontsize=12)
-            plt.title("Fitting function to datapoints", fontsize=12)
-            plt.plot(x_coordiantes, best_y_hat, label="Fitted functions", color="red")
-            fig.legend()
-            plt.show()
+            plot_graph(x_coordiantes, y_coordiantes, best_y_hat)
 
 
 if __name__ == '__main__':
