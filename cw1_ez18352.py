@@ -209,7 +209,7 @@ def fitting_best_functions(x_segments, y_segments):
 def plot_graph(x_coordiantes, y_coordiantes, best_y_hat):
     """Plots a graph of the reconstructed functions onto the x and y coordinates
     Args
-        x_coordiantes : List/array-like of x co-ordinates.
+        x_coordiantes : List/c array-like of x co-ordinates.
         y_coordiantes: List/array-like of y co-ordinates.
         best_y_hat: The best fitting y values
     Returns: None"""
