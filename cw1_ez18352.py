@@ -16,24 +16,6 @@ def load_points_from_file(filename):
     return points[0].values, points[1].values
 
 
-# def view_data_segments(xs, ys):
-#     """Visualises the input file with each segment plotted in a different colour.
-#     Args:
-#         xs : List/array-like of x co-ordinates.
-#         ys : List/array-like of y co-ordinates.
-#     Returns:
-#         None
-#     """
-#     assert len(xs) == len(ys)
-#     assert len(xs) % 20 == 0
-#     len_data = len(xs)
-#     num_segments = len_data // 20
-#     colour = np.concatenate([[i] * 20 for i in range(num_segments)])
-#     plt.set_cmap('Dark2')
-#     plt.scatter(xs, ys, c=colour)
-#     plt.show()
-
-
 def segment_data(xs, ys):
     """Splits the data into segments of 20 points
     Args:
@@ -53,6 +35,16 @@ def segment_data(xs, ys):
     return x_segments, y_segments
 
 
+def sum_squared(y, y_hat):
+    """Calculates the sum squared error of the residuals between the y values for the modelled points and the data
+    Args
+        y_hat : List/array-like of modelled y_values
+        y : List/array-like of y values from data
+    Returns:
+        sum squared error: the sum of the residuals between estimated y-values and y-values of data"""
+    return np.sum((y_hat-y)**2)
+
+
 def linear_least_squares(xs, ys):
     """Estimates the values of the weights, gradient(m) and y-intercept(c) for a linear model y= ax + c for the given data
     Args
@@ -69,39 +61,7 @@ def linear_least_squares(xs, ys):
     c, m = linear_weights[0], linear_weights[1]
     y_hat = xs*m + c
     linear_err = sum_squared(y_hat, ys)
-    print("linear error =" + str(linear_err))
     return y_hat, linear_err
-
-
-def sum_squared(y, y_hat):
-    """Calculates the sum squared error of the residuals between the y values for the modelled points and the data
-    Args
-        y_hat : List/array-like of modelled y_values
-        y : List/array-like of y values from data
-    Returns:
-        sum squared error: the sum of the residuals between estimated y-values and y-values of data"""
-    return np.sum((y_hat-y)**2)
-
-
-def polynomial_least_squares(xs, ys):
-    """Estimates the values of the coefficients a and c for the linear model y= ax^3 bx^2 + cx +d
-    Args
-        x : List/array-like of x co-ordinates.
-        y : List/array-like of y co-ordinates.
-    Returns:
-        polynomial_weights:  list of polynomial coefficients"""
-
-    ones = np.ones(xs.shape)
-    xs2 = np.square(xs)
-
-    X_array = np.column_stack((ones, xs, xs2))
-    x_e = np.linalg.inv(X_array.T.dot(X_array))
-    polynomial_weights = x_e.dot(X_array.T).dot(ys)
-
-    y_hat = (xs**2) * polynomial_weights[2] + xs * polynomial_weights[1] + polynomial_weights[0]
-    polynomial_err = sum_squared(y_hat, ys)
-    print("quadratic error =" + str(polynomial_err))
-    return y_hat, polynomial_err
 
 
 def cubic_least_squares(xs, ys):
@@ -124,7 +84,6 @@ def cubic_least_squares(xs, ys):
     y_hat = xs3 * cubic_weights[3] + xs2 * \
         cubic_weights[2] + xs * cubic_weights[1] + cubic_weights[0]
     cubic_err = sum_squared(y_hat, ys)
-    print("cubic error =" + str(cubic_err))
     return y_hat, cubic_err
 
 
@@ -143,31 +102,7 @@ def sinusoidal_least_squared(xs, ys):
     y_hat = sin_weights[1] * np.sin(xs) + sin_weights[0]
 
     sin_err = sum_squared(y_hat, ys)
-    print("sin error =" + str(sin_err))
     return y_hat, sin_err
-
-
-def quartic_least_squares(xs, ys):
-    """Estimates the values of the coefficients a and c for the linear model y= ax^3 bx^2 + cx +d
-    Args
-        x : List/array-like of x co-ordinates.
-        y : List/array-like of y co-ordinates.
-    Returns:
-        polynomial_weights:  list of polynomial coefficients"""
-    ones = np.ones(xs.shape)
-    xs2 = np.square(xs)
-    xs3 = np.power(xs, 3)
-    xs4 = np.power(xs, 4)
-
-    X_array = np.column_stack((ones, xs, xs2, xs3, xs4))
-    x_e = np.linalg.inv(X_array.T.dot(X_array))
-    polynomial_weights = x_e.dot(X_array.T).dot(ys)
-
-    y_hat = xs4 * polynomial_weights[4] + xs3 * polynomial_weights[3] + xs2 * \
-        polynomial_weights[2] + xs * polynomial_weights[1] + polynomial_weights[0]
-    quartic_err = sum_squared(y_hat, ys)
-    print("quartic error =" + str(quartic_err))
-    return y_hat, quartic_err
 
 
 def fitting_best_functions(x_segments, y_segments):
@@ -186,23 +121,22 @@ def fitting_best_functions(x_segments, y_segments):
         # model signal using linear least squares method and calculate the error for each function
         y_hat_linear, linear_err = linear_least_squares(xs, ys)
 
-        y_hat_poly, polynomial_err = polynomial_least_squares(xs, ys)
-
         y_hat_cubic, cubic_err = cubic_least_squares(xs, ys)
 
-        y_hat_quartic, quartic_err = quartic_least_squares(xs, ys)
-
         y_hat_sin, sin_err = sinusoidal_least_squared(xs, ys)
-        # finds the smallest error aa
-        best_fit = min(linear_err, cubic_err, sin_err)
-        total_reconstructed_error = total_reconstructed_error + best_fit
+
+        # finds the smallest error
+        best_fit_err = min(linear_err, cubic_err, sin_err)
         # check which function produced the smallest error and add it the best fitting points
-        if best_fit == linear_err:
+        if ((linear_err > cubic_err) and (linear_err < (1.15*cubic_err)) or (linear_err == best_fit_err)):
             best_y_hat.extend(y_hat_linear)
-        elif best_fit == cubic_err:
+            total_reconstructed_error = total_reconstructed_error + linear_err
+        elif best_fit_err == cubic_err:
             best_y_hat.extend(y_hat_cubic)
+            total_reconstructed_error = total_reconstructed_error + cubic_err
         else:
             best_y_hat.extend(y_hat_sin)
+            total_reconstructed_error = total_reconstructed_error + sin_err
     return best_y_hat, total_reconstructed_error
 
 
@@ -219,7 +153,7 @@ def plot_graph(x_coordiantes, y_coordiantes, best_y_hat):
     plt.plot(x_coordiantes, best_y_hat, label="Fitted functions", color="red")
     plt.xlabel("x-axis", fontsize=12)
     plt.ylabel("y-axis", fontsize=12)
-    plt.title("Fitting function to datapoints", fontsize=12)
+    plt.title("Fitting functions to datapoints", fontsize=12)
     fig.legend()
     plt.show()
 
@@ -234,7 +168,7 @@ def main():
             "Error: Too many arguments; Program only accepts a valid csv file and an optional '--plot' argument")
     elif len(sys_arguments) == 2 and sys_arguments[1] != '--plot':
         sys.exit(
-            "Error: Unkown second argument; program only accepts  '--plot' as an optional second argument")
+            "Error: Unkown second argument; program only accepts '--plot' as an optional second argument")
     else:
         # grabs the name of the csv file and check if it's a valid file
         csvfile_name = sys_arguments[0]
