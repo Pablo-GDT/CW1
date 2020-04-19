@@ -29,9 +29,7 @@ def segment_data(xs, ys):
     len_data = len(xs)
     num_segments = len_data // 20
     x_segments = np.split(xs, num_segments)
-    # [xs[x:x + 20] for x in range(0, len(xs), 20)]
     y_segments = np.split(ys, num_segments)
-    # [ys[y:y + 20] for y in range(0, len(ys), 20)]
     return x_segments, y_segments
 
 
