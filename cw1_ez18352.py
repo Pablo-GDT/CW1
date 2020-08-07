@@ -24,8 +24,10 @@ def segment_data(xs, ys):
     Returns:
         x_segments: list/array of x segments
         y_segments: list/array of y segments"""
-    assert len(xs) == len(ys)
-    assert len(xs) % 20 == 0
+    if len(xs) != len(ys):
+        raise AssertionError
+    if len(xs) % 20 != 0:
+        raise AssertionError
     len_data = len(xs)
     num_segments = len_data // 20
     x_segments = np.split(xs, num_segments)
@@ -95,7 +97,8 @@ def sinusoidal_least_squared(xs, ys):
         sin_err: total least squares error for sinusoidal model on given data"""
     ones = np.ones(xs.shape)
     X = np.column_stack((ones, np.sin(xs)))
-    sin_weights = np.linalg.inv(np.transpose(X).dot(X)).dot(np.transpose(X)).dot(ys)
+    sin_weights = np.linalg.inv(np.transpose(
+        X).dot(X)).dot(np.transpose(X)).dot(ys)
     # sin equation:
     y_hat = sin_weights[1] * np.sin(xs) + sin_weights[0]
 
@@ -178,7 +181,8 @@ def main():
         x_coordiantes, y_coordiantes = load_points_from_file(csvfile_name)
         x_segments, y_segments = segment_data(x_coordiantes, y_coordiantes)
         # fits the best function to each signal and returns the coordinates and reconstruction error which is printed
-        best_y_hat, total_reconstructed_error = fitting_best_functions(x_segments, y_segments)
+        best_y_hat, total_reconstructed_error = fitting_best_functions(
+            x_segments, y_segments)
         print(total_reconstructed_error)
         # logical statement that identifies when the user passes the plotting argument
         if len(sys_arguments) == 2 and sys_arguments[1] == '--plot':
