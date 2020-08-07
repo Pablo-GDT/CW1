@@ -24,8 +24,10 @@ def segment_data(xs, ys):
     Returns:
         x_segments: list/array of x segments
         y_segments: list/array of y segments"""
-    assert len(xs) == len(ys)
-    assert len(xs) % 20 == 0
+    if len(xs) != len(ys):
+        raise AssertionError
+    if len(xs) % 20 != 0:
+        raise AssertionError
     len_data = len(xs)
     num_segments = len_data // 20
     x_segments = np.split(xs, num_segments)
